@@ -1,0 +1,1871 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Projekty</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* ── RESET & BASE ─────────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:          #F5F2ED;
+    --surface:     #FDFBF8;
+    --border:      #DDD8CF;
+    --border-soft: #EAE6DF;
+    --text-1:      #1A1714;
+    --text-2:      #5C574F;
+    --text-3:      #9A9389;
+    --accent:      #C4622D;
+    --accent-pale: #FAE8DC;
+    --green:       #3B7A57;
+    --green-pale:  #DDF0E6;
+    --panel-w:     260px;
+    --radius:      6px;
+    --shadow:      0 2px 12px rgba(0,0,0,.07);
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text-1);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* ── LAYOUT ───────────────────────────────────────────────── */
+  #app {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ── LEFT PANEL ───────────────────────────────────────────── */
+  #sidebar {
+    width: var(--panel-w);
+    flex-shrink: 0;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  #sidebar-header {
+    padding: 18px 18px 12px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  #sidebar-header h1 {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -.3px;
+    color: var(--text-1);
+  }
+
+  #sidebar-header p {
+    font-size: 11px;
+    color: var(--text-3);
+    margin-top: 2px;
+    font-family: 'DM Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: .6px;
+  }
+
+  #btn-show-index {
+    margin-top: 10px;
+    width: 100%;
+    padding: 7px 10px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--text-2);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all .12s;
+  }
+
+  #btn-show-index:hover { background: var(--accent-pale); border-color: var(--accent); color: var(--accent); }
+  #btn-show-index.active { background: var(--accent-pale); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+
+  #project-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 0;
+  }
+
+  #project-list::-webkit-scrollbar { width: 4px; }
+  #project-list::-webkit-scrollbar-track { background: transparent; }
+  #project-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  .project-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 14px 9px 16px;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    transition: background .12s, border-color .12s;
+    position: relative;
+  }
+
+  .project-item:hover { background: var(--bg); }
+
+  .project-item.active {
+    background: var(--accent-pale);
+    border-left-color: var(--accent);
+  }
+
+  .project-dot {
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .project-name {
+    flex: 1;
+    font-size: 13.5px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .project-count {
+    font-size: 10px;
+    font-family: 'DM Mono', monospace;
+    color: var(--text-3);
+    background: var(--border-soft);
+    padding: 1px 6px;
+    border-radius: 10px;
+    flex-shrink: 0;
+  }
+
+  .project-item.active .project-count {
+    background: rgba(196,98,45,.15);
+    color: var(--accent);
+  }
+
+  #sidebar-footer {
+    padding: 10px 12px 14px;
+    border-top: 1px solid var(--border-soft);
+  }
+
+  #btn-new-project {
+    width: 100%;
+    padding: 9px;
+    background: var(--text-1);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: opacity .15s;
+  }
+
+  #btn-new-project:hover { opacity: .82; }
+
+  /* ── MAIN AREA ────────────────────────────────────────────── */
+  #main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--bg);
+  }
+
+  /* ── EMPTY STATE ─────────────────────────────────────────── */
+  #empty-state {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 10px;
+    color: var(--text-3);
+    text-align: center;
+  }
+
+  #empty-state .icon { font-size: 42px; margin-bottom: 6px; }
+  #empty-state h2 { font-family: 'Libre Baskerville', serif; font-size: 18px; color: var(--text-2); }
+  #empty-state p { font-size: 13px; }
+
+  /* ── PROJECT HEADER ──────────────────────────────────────── */
+  #project-view {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  #project-header {
+    padding: 20px 28px 0;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  #project-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  #project-color-dot {
+    width: 13px; height: 13px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  #project-title-input {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-1);
+    border: none;
+    background: transparent;
+    outline: none;
+    flex: 1;
+    border-bottom: 2px solid transparent;
+    transition: border-color .15s;
+    padding-bottom: 2px;
+  }
+
+  #project-title-input:focus {
+    border-bottom-color: var(--accent);
+  }
+
+  #btn-delete-project {
+    padding: 5px 10px;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 12px;
+    color: var(--text-3);
+    cursor: pointer;
+    transition: all .12s;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  #btn-delete-project:hover {
+    border-color: #c0392b;
+    color: #c0392b;
+    background: #fdf0ef;
+  }
+
+  /* ── TABS ─────────────────────────────────────────────────── */
+  #tab-bar {
+    display: flex;
+    gap: 0;
+  }
+
+  .tab-btn {
+    padding: 10px 18px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-3);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: color .12s, border-color .12s;
+    white-space: nowrap;
+  }
+
+  .tab-btn:hover { color: var(--text-1); }
+
+  .tab-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  .tab-btn .tab-badge {
+    display: inline-block;
+    background: var(--border-soft);
+    color: var(--text-3);
+    font-size: 10px;
+    font-family: 'DM Mono', monospace;
+    padding: 1px 5px;
+    border-radius: 8px;
+    margin-left: 5px;
+    vertical-align: middle;
+  }
+
+  .tab-btn.active .tab-badge {
+    background: rgba(196,98,45,.15);
+    color: var(--accent);
+  }
+
+  /* ── TAB CONTENT ──────────────────────────────────────────── */
+  #tab-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 28px;
+  }
+
+  #tab-content::-webkit-scrollbar { width: 5px; }
+  #tab-content::-webkit-scrollbar-track { background: transparent; }
+  #tab-content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── TEXTAREA (Opis / Instrukcja) ─────────────────────────── */
+  .content-textarea {
+    width: 100%;
+    min-height: 320px;
+    padding: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text-1);
+    resize: vertical;
+    outline: none;
+    transition: border-color .15s;
+  }
+
+  .content-textarea:focus { border-color: var(--accent); }
+  .content-textarea::placeholder { color: var(--text-3); }
+
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    color: var(--text-3);
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  /* ── ADD TASK BAR ─────────────────────────────────────────── */
+  #add-task-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  #new-task-input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    background: var(--surface);
+    color: var(--text-1);
+    outline: none;
+    transition: border-color .15s;
+  }
+
+  #new-task-input:focus { border-color: var(--accent); }
+  #new-task-input::placeholder { color: var(--text-3); }
+
+  #btn-add-task {
+    padding: 10px 18px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity .15s;
+  }
+
+  #btn-add-task:hover { opacity: .85; }
+
+  /* ── TASK CARD ────────────────────────────────────────────── */
+  .task-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 10px;
+    overflow: hidden;
+    transition: box-shadow .15s;
+  }
+
+  .task-card:hover { box-shadow: var(--shadow); }
+
+  .task-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 13px 14px 13px 14px;
+  }
+
+  .task-check-wrap {
+    padding-top: 1px;
+    flex-shrink: 0;
+  }
+
+  .task-check {
+    width: 18px; height: 18px;
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .15s;
+    flex-shrink: 0;
+    background: var(--bg);
+  }
+
+  .task-check:hover { border-color: var(--accent); }
+
+  .task-check.checked {
+    background: var(--green);
+    border-color: var(--green);
+  }
+
+  .task-check.checked::after {
+    content: '✓';
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .task-body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .task-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .task-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-1);
+    flex: 1;
+    min-width: 0;
+  }
+
+  .task-card.done .task-title {
+    text-decoration: line-through;
+    color: var(--text-3);
+  }
+
+  .task-title-edit {
+    display: none;
+    width: 100%;
+    padding: 2px 6px;
+    border: 1.5px solid var(--accent);
+    border-radius: 4px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    background: var(--bg);
+    color: var(--text-1);
+    outline: none;
+  }
+
+  .task-desc {
+    font-size: 13px;
+    color: var(--text-2);
+    margin-top: 3px;
+    white-space: pre-wrap;
+  }
+
+  .task-actions {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity .15s;
+  }
+
+  .task-card:hover .task-actions { opacity: 1; }
+
+  .task-btn {
+    padding: 4px 8px;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 12px;
+    color: var(--text-3);
+    cursor: pointer;
+    transition: all .12s;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .task-btn:hover { color: var(--text-1); border-color: var(--text-2); background: var(--bg); }
+  .task-btn.del:hover { color: #c0392b; border-color: #c0392b; background: #fdf0ef; }
+
+  /* ── CHECKLIST ────────────────────────────────────────────── */
+  .checklist {
+    padding: 0 14px 10px 42px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .checklist-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .check-sub {
+    width: 15px; height: 15px;
+    border: 1.5px solid var(--border);
+    border-radius: 3px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .12s;
+    flex-shrink: 0;
+    background: var(--bg);
+  }
+
+  .check-sub:hover { border-color: var(--green); }
+
+  .check-sub.checked {
+    background: var(--green);
+    border-color: var(--green);
+  }
+
+  .check-sub.checked::after {
+    content: '✓';
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+  }
+
+  .checklist-text {
+    font-size: 13px;
+    color: var(--text-2);
+    flex: 1;
+    transition: all .12s;
+  }
+
+  .checklist-text.done {
+    text-decoration: line-through;
+    color: var(--text-3);
+  }
+
+  .checklist-text-edit {
+    display: none;
+    flex: 1;
+    padding: 1px 6px;
+    border: 1.5px solid var(--accent);
+    border-radius: 3px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    background: var(--bg);
+    color: var(--text-1);
+    outline: none;
+  }
+
+  .btn-del-sub {
+    background: none;
+    border: none;
+    color: var(--text-3);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0 3px;
+    transition: color .12s;
+    line-height: 1;
+  }
+
+  .btn-del-sub:hover { color: #c0392b; }
+
+  .add-sub-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px 12px 42px;
+  }
+
+  .add-sub-input {
+    flex: 1;
+    padding: 5px 10px;
+    border: 1px dashed var(--border);
+    border-radius: 4px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12.5px;
+    background: transparent;
+    color: var(--text-1);
+    outline: none;
+    transition: border-color .15s, background .15s;
+  }
+
+  .add-sub-input:focus {
+    border-color: var(--accent);
+    border-style: solid;
+    background: var(--surface);
+  }
+
+  .add-sub-input::placeholder { color: var(--text-3); }
+
+  .btn-add-sub {
+    padding: 4px 10px;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 12px;
+    color: var(--text-2);
+    cursor: pointer;
+    transition: all .12s;
+    font-family: 'DM Sans', sans-serif;
+    white-space: nowrap;
+  }
+
+  .btn-add-sub:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-pale); }
+
+  /* ── CHECKLIST PROGRESS ───────────────────────────────────── */
+  .checklist-progress {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 0 14px 6px 42px;
+  }
+
+  .progress-bar-wrap {
+    flex: 1;
+    height: 4px;
+    background: var(--border-soft);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--green);
+    border-radius: 2px;
+    transition: width .3s;
+  }
+
+  .progress-label {
+    font-size: 10px;
+    font-family: 'DM Mono', monospace;
+    color: var(--text-3);
+  }
+
+  /* ── TASK DESC EDIT ───────────────────────────────────────── */
+  .task-desc-area {
+    display: none;
+    width: 100%;
+    padding: 6px 14px 6px 42px;
+  }
+
+  .task-desc-area textarea {
+    width: 100%;
+    padding: 7px 10px;
+    border: 1.5px solid var(--accent);
+    border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    background: var(--bg);
+    color: var(--text-1);
+    resize: vertical;
+    min-height: 60px;
+    outline: none;
+  }
+
+  /* ── DONE TAB ─────────────────────────────────────────────── */
+  .done-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 8px;
+    opacity: .65;
+    transition: all .15s;
+  }
+
+  .done-card:hover { opacity: 1; }
+
+  .done-check-icon {
+    width: 18px; height: 18px;
+    border-radius: 4px;
+    background: var(--green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .done-check-icon::after {
+    content: '✓';
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .done-card-body { flex: 1; min-width: 0; }
+
+  .done-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-2);
+    text-decoration: line-through;
+  }
+
+  .done-desc {
+    font-size: 12px;
+    color: var(--text-3);
+    margin-top: 2px;
+    white-space: pre-wrap;
+  }
+
+  .done-card .task-btn {
+    opacity: 0;
+    transition: opacity .15s;
+  }
+
+  .done-card:hover .task-btn { opacity: 1; }
+
+  /* ── EMPTY PLACEHOLDERS ───────────────────────────────────── */
+  .empty-tasks {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-3);
+  }
+
+  .empty-tasks .ei { font-size: 30px; margin-bottom: 8px; }
+  .empty-tasks p { font-size: 13px; }
+
+  /* ── MODAL ────────────────────────────────────────────────── */
+  #modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(26,23,20,.45);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #modal-overlay.open { display: flex; }
+
+  #modal {
+    background: var(--surface);
+    border-radius: 10px;
+    padding: 28px;
+    width: 420px;
+    max-width: 95vw;
+    box-shadow: 0 20px 60px rgba(0,0,0,.18);
+  }
+
+  #modal h2 {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 17px;
+    margin-bottom: 18px;
+    color: var(--text-1);
+  }
+
+  #modal label {
+    display: block;
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: .6px;
+    color: var(--text-3);
+    margin-bottom: 6px;
+  }
+
+  #modal input[type="text"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text-1);
+    background: var(--bg);
+    outline: none;
+    margin-bottom: 16px;
+    transition: border-color .15s;
+  }
+
+  #modal input[type="text"]:focus { border-color: var(--accent); }
+
+  .color-picker {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+
+  .color-swatch {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 3px solid transparent;
+    transition: border-color .12s, transform .12s;
+  }
+
+  .color-swatch:hover { transform: scale(1.15); }
+  .color-swatch.selected { border-color: var(--text-1); }
+
+  .modal-btns {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .btn-cancel {
+    padding: 9px 18px;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text-2);
+    cursor: pointer;
+    transition: all .12s;
+  }
+
+  .btn-cancel:hover { background: var(--bg); }
+
+  .btn-confirm {
+    padding: 9px 18px;
+    background: var(--accent);
+    border: none;
+    border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    cursor: pointer;
+    transition: opacity .12s;
+  }
+
+  .btn-confirm:hover { opacity: .85; }
+
+  /* ── ANIMATIONS ───────────────────────────────────────────── */
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .task-card, .done-card {
+    animation: slideIn .18s ease;
+  }
+
+  /* ── SCROLLBAR ────────────────────────────────────────────── */
+  #tab-content::-webkit-scrollbar { width: 5px; }
+
+  /* ════════════════════════════════════════════════════════════
+     SPIS PROJEKTÓW — INDEX VIEW
+  ════════════════════════════════════════════════════════════ */
+  #index-view {
+    flex: 1;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  #index-view.visible { display: flex; }
+
+  /* ── Index header ── */
+  #index-header {
+    padding: 24px 28px 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  #index-header-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  #index-title {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-1);
+  }
+
+  #index-count {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-3);
+  }
+
+  /* ── Search bar (przygotowane pod przyszłą wyszukiwarkę) ── */
+  #index-search-wrap {
+    position: relative;
+  }
+
+  #index-search-icon {
+    position: absolute;
+    left: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-3);
+    font-size: 13px;
+    pointer-events: none;
+  }
+
+  #index-search-input {
+    width: 100%;
+    padding: 9px 12px 9px 32px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13.5px;
+    background: var(--bg);
+    color: var(--text-1);
+    outline: none;
+    transition: border-color .15s, background .15s;
+  }
+
+  #index-search-input:focus {
+    border-color: var(--accent);
+    background: var(--surface);
+  }
+
+  #index-search-input::placeholder { color: var(--text-3); }
+
+  /* ── Tiles grid ── */
+  #index-grid-wrap {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 28px;
+  }
+
+  #index-grid-wrap::-webkit-scrollbar { width: 5px; }
+  #index-grid-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  #index-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+  }
+
+  /* ── Single tile ── */
+  .index-tile {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: box-shadow .15s, transform .15s;
+    animation: slideIn .18s ease;
+  }
+
+  .index-tile:hover {
+    box-shadow: 0 6px 24px rgba(0,0,0,.10);
+    transform: translateY(-2px);
+  }
+
+  /* Pasek koloru na górze kafelka */
+  .tile-color-bar {
+    height: 4px;
+    flex-shrink: 0;
+  }
+
+  .tile-body {
+    padding: 16px 16px 12px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .tile-name-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .tile-dot {
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .tile-name {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-1);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .tile-desc {
+    font-size: 12.5px;
+    color: var(--text-2);
+    line-height: 1.5;
+    /* maks 2 linie */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 2lh;
+    flex: 1;
+  }
+
+  .tile-desc.empty { color: var(--text-3); font-style: italic; }
+
+  /* Statystyki zadań */
+  .tile-stats {
+    display: flex;
+    gap: 10px;
+    margin-top: 4px;
+  }
+
+  .tile-stat {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10.5px;
+    color: var(--text-3);
+  }
+
+  .tile-stat-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+  }
+
+  .tile-stat-dot.todo  { background: var(--accent); }
+  .tile-stat-dot.done  { background: var(--green); }
+
+  /* Footer kafelka z przyciskiem */
+  .tile-footer {
+    padding: 10px 16px 14px;
+    border-top: 1px solid var(--border-soft);
+  }
+
+  .btn-open-project {
+    width: 100%;
+    padding: 8px;
+    background: var(--text-1);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity .15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .btn-open-project:hover { opacity: .80; }
+
+  /* ── Empty index state ── */
+  #index-empty {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 60px 20px;
+    color: var(--text-3);
+    text-align: center;
+  }
+
+  #index-empty .ei { font-size: 36px; }
+  #index-empty p { font-size: 13px; }
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ── SIDEBAR ── -->
+  <nav id="sidebar">
+    <div id="sidebar-header">
+      <h1>Projekty</h1>
+      <p>Menedżer zadań</p>
+      <button id="btn-show-index" onclick="showIndexView()">
+        <span>☰</span> Spis projektów
+      </button>
+    </div>
+    <ul id="project-list"></ul>
+    <div id="sidebar-footer">
+      <button id="btn-new-project" onclick="openNewProjectModal()">
+        <span style="font-size:16px;line-height:1">+</span> Nowy projekt
+      </button>
+    </div>
+  </nav>
+
+  <!-- ── MAIN ── -->
+  <div id="main">
+
+    <!-- Index / Spis projektów -->
+    <div id="index-view">
+      <div id="index-header">
+        <div id="index-header-top">
+          <span id="index-title">Spis projektów</span>
+          <span id="index-count"></span>
+        </div>
+        <div id="index-search-wrap">
+          <span id="index-search-icon">🔍</span>
+          <input
+            id="index-search-input"
+            type="text"
+            placeholder="Szukaj projektu…"
+            oninput="onIndexSearch(this.value)"
+          >
+        </div>
+      </div>
+      <div id="index-grid-wrap">
+        <div id="index-grid"></div>
+        <div id="index-empty">
+          <div class="ei">🔎</div>
+          <p>Brak projektów pasujących do wyszukiwania.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div id="empty-state">
+      <div class="icon">📋</div>
+      <h2>Brak wybranego projektu</h2>
+      <p>Wybierz projekt z listy lub utwórz nowy.</p>
+    </div>
+
+    <!-- Project view -->
+    <div id="project-view" style="display:none;">
+
+      <div id="project-header">
+        <div id="project-title-row">
+          <div id="project-color-dot"></div>
+          <input id="project-title-input" type="text" placeholder="Nazwa projektu"
+                 oninput="updateProjectName(this.value)"
+                 onblur="saveProjectName()">
+          <button id="btn-delete-project" onclick="deleteCurrentProject()">Usuń projekt</button>
+        </div>
+        <div id="tab-bar">
+          <button class="tab-btn active" data-tab="opis" onclick="switchTab('opis')">Opis</button>
+          <button class="tab-btn" data-tab="instrukcja" onclick="switchTab('instrukcja')">Instrukcja</button>
+          <button class="tab-btn" data-tab="todo" onclick="switchTab('todo')">
+            Do zrobienia <span class="tab-badge" id="badge-todo">0</span>
+          </button>
+          <button class="tab-btn" data-tab="done" onclick="switchTab('done')">
+            Zrobione <span class="tab-badge" id="badge-done">0</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="tab-content">
+
+        <!-- Opis -->
+        <div class="tab-panel active" id="panel-opis">
+          <span class="section-label">Opis projektu</span>
+          <textarea class="content-textarea" id="opis-textarea"
+                    placeholder="Napisz krótki opis projektu — cel, kontekst, najważniejsze informacje…"
+                    oninput="saveTextArea('opis', this.value)"></textarea>
+        </div>
+
+        <!-- Instrukcja -->
+        <div class="tab-panel" id="panel-instrukcja">
+          <span class="section-label">Instrukcja i notatki</span>
+          <textarea class="content-textarea" id="instrukcja-textarea"
+                    placeholder="Instrukcje, procesy do wykonania, ważne notatki, linki, zasoby…"
+                    oninput="saveTextArea('instrukcja', this.value)"></textarea>
+        </div>
+
+        <!-- Do zrobienia -->
+        <div class="tab-panel" id="panel-todo">
+          <div id="add-task-bar">
+            <input id="new-task-input" type="text"
+                   placeholder="Nowe zadanie…"
+                   onkeydown="if(event.key==='Enter') addTask()">
+            <button id="btn-add-task" onclick="addTask()">+ Dodaj</button>
+          </div>
+          <div id="task-list"></div>
+        </div>
+
+        <!-- Zrobione -->
+        <div class="tab-panel" id="panel-done">
+          <div id="done-list"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL: nowy projekt ── -->
+<div id="modal-overlay" onclick="if(event.target===this) closeModal()">
+  <div id="modal">
+    <h2>Nowy projekt</h2>
+    <label>Nazwa projektu</label>
+    <input type="text" id="modal-name" placeholder="np. Redesign strony" onkeydown="if(event.key==='Enter') confirmNewProject()">
+    <label>Kolor</label>
+    <div class="color-picker" id="color-picker"></div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">Anuluj</button>
+      <button class="btn-confirm" onclick="confirmNewProject()">Utwórz</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   DATA MODEL
+═══════════════════════════════════════════════════════ */
+const COLORS = [
+  '#C4622D','#3B7A57','#2C6FAC','#8B3A8B',
+  '#B5860D','#C0392B','#1A7A82','#6B4E3D',
+  '#4A5568','#D4875A'
+];
+
+let state = {
+  projects: [],
+  activeProjectId: null
+};
+
+function genId() {
+  return Math.random().toString(36).slice(2,10) + Date.now().toString(36);
+}
+
+/* ── PERSISTENCE ────────────────────────────────────── */
+function save() {
+  localStorage.setItem('pm_v1', JSON.stringify(state));
+}
+
+function load() {
+  try {
+    const raw = localStorage.getItem('pm_v1');
+    if (raw) { state = JSON.parse(raw); return; }
+  } catch(e) {}
+  // Przykładowe dane
+  state = {
+    projects: [
+      {
+        id: genId(),
+        name: 'Redesign strony',
+        color: '#2C6FAC',
+        opis: 'Przebudowa witryny firmowej — nowy layout, nowe treści, responsywność.',
+        instrukcja: 'Etap 1: Wireframy\nEtap 2: Makiety w Figma\nEtap 3: Implementacja\n\nKontakt z klientem: biuro@firma.pl',
+        tasks: [
+          {
+            id: genId(), title: 'Przygotuj wireframy',
+            desc: 'Szkice układu strony głównej i podstron.',
+            done: false,
+            subtasks: [
+              { id: genId(), text: 'Strona główna', done: false },
+              { id: genId(), text: 'Podstrona O nas', done: true },
+              { id: genId(), text: 'Podstrona Kontakt', done: false },
+            ]
+          },
+          {
+            id: genId(), title: 'Projekt kolorystyki',
+            desc: 'Paleta barw i typografia.',
+            done: false,
+            subtasks: [
+              { id: genId(), text: 'Wybór kolorów wiodących', done: true },
+              { id: genId(), text: 'Dobór fontów', done: false },
+            ]
+          },
+          {
+            id: genId(), title: 'Zebrać treści od klienta',
+            desc: '',
+            done: true,
+            subtasks: []
+          }
+        ]
+      },
+      {
+        id: genId(),
+        name: 'App mobilna',
+        color: '#3B7A57',
+        opis: 'Aplikacja mobilna do śledzenia nawyków dziennych.',
+        instrukcja: 'Stack: React Native + Firebase\nDeadline: koniec kwartału\n\nRepozytorium: github.com/org/habits-app',
+        tasks: [
+          {
+            id: genId(), title: 'Setup projektu React Native',
+            desc: 'Konfiguracja środowiska, zależności, CI/CD.',
+            done: true,
+            subtasks: [
+              { id: genId(), text: 'Instalacja narzędzi', done: true },
+              { id: genId(), text: 'Konfiguracja Firebase', done: true },
+            ]
+          },
+          {
+            id: genId(), title: 'Ekran logowania',
+            desc: 'Formularz + autoryzacja Firebase Auth.',
+            done: false,
+            subtasks: [
+              { id: genId(), text: 'UI formularza', done: true },
+              { id: genId(), text: 'Obsługa błędów', done: false },
+              { id: genId(), text: 'Testy', done: false },
+            ]
+          }
+        ]
+      }
+    ],
+    activeProjectId: null
+  };
+  save();
+}
+
+/* ═══════════════════════════════════════════════════════
+   PROJECT HELPERS
+═══════════════════════════════════════════════════════ */
+function getProject(id) {
+  return state.projects.find(p => p.id === id);
+}
+
+function activeProject() {
+  return getProject(state.activeProjectId);
+}
+
+/* ═══════════════════════════════════════════════════════
+   RENDER
+═══════════════════════════════════════════════════════ */
+function render() {
+  renderSidebar();
+  renderProjectView();
+}
+
+/* ── SIDEBAR ─────────────────────────────────────────── */
+function renderSidebar() {
+  const ul = document.getElementById('project-list');
+  ul.innerHTML = '';
+  state.projects.forEach(p => {
+    const todoCount = p.tasks.filter(t => !t.done).length;
+    const li = document.createElement('li');
+    li.className = 'project-item' + (p.id === state.activeProjectId ? ' active' : '');
+    li.innerHTML = `
+      <div class="project-dot" style="background:${p.color}"></div>
+      <span class="project-name">${esc(p.name)}</span>
+      ${todoCount > 0 ? `<span class="project-count">${todoCount}</span>` : ''}
+    `;
+    li.onclick = () => selectProject(p.id);
+    ul.appendChild(li);
+  });
+}
+
+/* ── PROJECT VIEW ────────────────────────────────────── */
+function renderProjectView() {
+  const p = activeProject();
+  const empty = document.getElementById('empty-state');
+  const view  = document.getElementById('project-view');
+
+  if (!p) {
+    empty.style.display = 'flex';
+    view.style.display  = 'none';
+    return;
+  }
+
+  empty.style.display = 'none';
+  view.style.display  = 'flex';
+
+  // Header
+  document.getElementById('project-color-dot').style.background = p.color;
+  document.getElementById('project-title-input').value = p.name;
+
+  // Textareas
+  document.getElementById('opis-textarea').value = p.opis || '';
+  document.getElementById('instrukcja-textarea').value = p.instrukcja || '';
+
+  // Badges
+  const todoTasks = p.tasks.filter(t => !t.done);
+  const doneTasks = p.tasks.filter(t => t.done);
+  document.getElementById('badge-todo').textContent = todoTasks.length;
+  document.getElementById('badge-done').textContent = doneTasks.length;
+
+  // Task lists
+  renderTaskList(todoTasks);
+  renderDoneList(doneTasks);
+}
+
+/* ── TASK LIST ───────────────────────────────────────── */
+function renderTaskList(tasks) {
+  const el = document.getElementById('task-list');
+  el.innerHTML = '';
+  if (!tasks.length) {
+    el.innerHTML = `<div class="empty-tasks"><div class="ei">✅</div><p>Brak zadań do zrobienia.<br>Dodaj pierwsze powyżej!</p></div>`;
+    return;
+  }
+  tasks.forEach(t => el.appendChild(buildTaskCard(t)));
+}
+
+function buildTaskCard(task) {
+  const div = document.createElement('div');
+  div.className = 'task-card' + (task.done ? ' done' : '');
+  div.dataset.id = task.id;
+
+  // progress
+  const total = task.subtasks.length;
+  const checked = task.subtasks.filter(s => s.done).length;
+  const pct = total ? Math.round(checked / total * 100) : 0;
+
+  // subtasks html
+  let subsHtml = '';
+  task.subtasks.forEach(s => {
+    subsHtml += `
+      <div class="checklist-item" data-sid="${s.id}">
+        <div class="check-sub ${s.done ? 'checked' : ''}" onclick="toggleSub('${task.id}','${s.id}')"></div>
+        <span class="checklist-text ${s.done ? 'done' : ''}" ondblclick="editSubStart(this,'${task.id}','${s.id}')">${esc(s.text)}</span>
+        <input class="checklist-text-edit" type="text" value="${esc(s.text)}"
+               onblur="editSubEnd(this,'${task.id}','${s.id}')"
+               onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape')this.blur()">
+        <button class="btn-del-sub" onclick="deleteSub('${task.id}','${s.id}')">×</button>
+      </div>`;
+  });
+
+  div.innerHTML = `
+    <div class="task-header">
+      <div class="task-check-wrap">
+        <div class="task-check ${task.done ? 'checked' : ''}" onclick="toggleTask('${task.id}')"></div>
+      </div>
+      <div class="task-body">
+        <div class="task-title-wrap">
+          <span class="task-title" ondblclick="editTaskTitleStart(this,'${task.id}')">${esc(task.title)}</span>
+          <input class="task-title-edit" type="text" value="${esc(task.title)}"
+                 onblur="editTaskTitleEnd(this,'${task.id}')"
+                 onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape')this.blur()">
+        </div>
+        ${task.desc ? `<div class="task-desc">${esc(task.desc)}</div>` : ''}
+      </div>
+      <div class="task-actions">
+        <button class="task-btn" onclick="editTaskDescToggle('${task.id}')">✏️</button>
+        <button class="task-btn del" onclick="deleteTask('${task.id}')">🗑</button>
+      </div>
+    </div>
+    ${total ? `
+    <div class="checklist-progress">
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
+      <span class="progress-label">${checked}/${total}</span>
+    </div>` : ''}
+    <div class="checklist">${subsHtml}</div>
+    <div class="task-desc-area" id="descarea-${task.id}">
+      <textarea placeholder="Opis zadania…" onblur="saveTaskDesc('${task.id}',this.value)">${esc(task.desc)}</textarea>
+    </div>
+    <div class="add-sub-row">
+      <input class="add-sub-input" type="text" placeholder="+ podpunkt…"
+             onkeydown="if(event.key==='Enter') addSub('${task.id}',this)">
+      <button class="btn-add-sub" onclick="addSubFromBtn('${task.id}',this)">+ Dodaj</button>
+    </div>
+  `;
+  return div;
+}
+
+/* ── DONE LIST ───────────────────────────────────────── */
+function renderDoneList(tasks) {
+  const el = document.getElementById('done-list');
+  el.innerHTML = '';
+  if (!tasks.length) {
+    el.innerHTML = `<div class="empty-tasks"><div class="ei">🏆</div><p>Żadne zadanie nie zostało jeszcze ukończone.</p></div>`;
+    return;
+  }
+  tasks.forEach(t => {
+    const div = document.createElement('div');
+    div.className = 'done-card';
+    div.innerHTML = `
+      <div class="done-check-icon"></div>
+      <div class="done-card-body">
+        <div class="done-title">${esc(t.title)}</div>
+        ${t.desc ? `<div class="done-desc">${esc(t.desc)}</div>` : ''}
+        ${t.subtasks.length ? `<div class="done-desc" style="margin-top:4px">${t.subtasks.length} podpunktów</div>` : ''}
+      </div>
+      <button class="task-btn" onclick="restoreTask('${t.id}')">↩ Przywróć</button>
+    `;
+    el.appendChild(div);
+  });
+}
+
+/* ═══════════════════════════════════════════════════════
+   ACTIONS — PROJECTS
+═══════════════════════════════════════════════════════ */
+function selectProject(id) {
+  hideIndexView();
+  state.activeProjectId = id;
+  // Reset to first tab
+  switchTab('opis');
+  save();
+  render();
+}
+
+let _pendingColor = COLORS[0];
+
+function openNewProjectModal() {
+  _pendingColor = COLORS[0];
+  document.getElementById('modal-name').value = '';
+  buildColorPicker();
+  document.getElementById('modal-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('modal-name').focus(), 80);
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+function buildColorPicker() {
+  const el = document.getElementById('color-picker');
+  el.innerHTML = '';
+  COLORS.forEach(c => {
+    const s = document.createElement('div');
+    s.className = 'color-swatch' + (c === _pendingColor ? ' selected' : '');
+    s.style.background = c;
+    s.onclick = () => {
+      _pendingColor = c;
+      el.querySelectorAll('.color-swatch').forEach(x => x.classList.remove('selected'));
+      s.classList.add('selected');
+    };
+    el.appendChild(s);
+  });
+}
+
+function confirmNewProject() {
+  const name = document.getElementById('modal-name').value.trim() || 'Nowy projekt';
+  const proj = {
+    id: genId(),
+    name,
+    color: _pendingColor,
+    opis: '',
+    instrukcja: '',
+    tasks: []
+  };
+  state.projects.push(proj);
+  state.activeProjectId = proj.id;
+  save();
+  closeModal();
+  switchTab('opis');
+  render();
+}
+
+function updateProjectName(val) {
+  const p = activeProject();
+  if (p) p.name = val;
+  renderSidebar();
+}
+
+function saveProjectName() {
+  save();
+}
+
+function deleteCurrentProject() {
+  if (!activeProject()) return;
+  const name = activeProject().name;
+  if (!confirm(`Usunąć projekt „${name}"?`)) return;
+  state.projects = state.projects.filter(p => p.id !== state.activeProjectId);
+  state.activeProjectId = state.projects.length ? state.projects[0].id : null;
+  save();
+  if (state.activeProjectId) switchTab('opis');
+  render();
+}
+
+/* ═══════════════════════════════════════════════════════
+   ACTIONS — TABS
+═══════════════════════════════════════════════════════ */
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === name);
+  });
+  document.querySelectorAll('.tab-panel').forEach(p => {
+    p.classList.toggle('active', p.id === 'panel-' + name);
+  });
+}
+
+/* ═══════════════════════════════════════════════════════
+   ACTIONS — TEXTAREA
+═══════════════════════════════════════════════════════ */
+function saveTextArea(field, val) {
+  const p = activeProject();
+  if (p) { p[field] = val; save(); }
+}
+
+/* ═══════════════════════════════════════════════════════
+   ACTIONS — TASKS
+═══════════════════════════════════════════════════════ */
+function addTask() {
+  const inp = document.getElementById('new-task-input');
+  const title = inp.value.trim();
+  if (!title) return;
+  const p = activeProject();
+  if (!p) return;
+  p.tasks.unshift({ id: genId(), title, desc: '', done: false, subtasks: [] });
+  inp.value = '';
+  save();
+  renderProjectView();
+}
+
+function toggleTask(taskId) {
+  const p = activeProject();
+  const t = p.tasks.find(t => t.id === taskId);
+  if (!t) return;
+  t.done = !t.done;
+  save();
+  renderProjectView();
+}
+
+function deleteTask(taskId) {
+  const p = activeProject();
+  if (!confirm('Usunąć to zadanie?')) return;
+  p.tasks = p.tasks.filter(t => t.id !== taskId);
+  save();
+  renderProjectView();
+}
+
+function restoreTask(taskId) {
+  const p = activeProject();
+  const t = p.tasks.find(t => t.id === taskId);
+  if (t) { t.done = false; save(); renderProjectView(); }
+}
+
+/* ── EDIT TITLE ──────────────────────────────────────── */
+function editTaskTitleStart(spanEl, taskId) {
+  const wrap = spanEl.closest('.task-title-wrap');
+  spanEl.style.display = 'none';
+  const inp = wrap.querySelector('.task-title-edit');
+  inp.style.display = 'block';
+  inp.focus();
+  inp.select();
+}
+
+function editTaskTitleEnd(inp, taskId) {
+  const val = inp.value.trim();
+  if (val) {
+    const p = activeProject();
+    const t = p.tasks.find(t => t.id === taskId);
+    if (t) { t.title = val; save(); }
+  }
+  renderProjectView();
+}
+
+/* ── EDIT DESC ───────────────────────────────────────── */
+function editTaskDescToggle(taskId) {
+  const area = document.getElementById('descarea-' + taskId);
+  if (!area) return;
+  const visible = area.style.display === 'block';
+  area.style.display = visible ? 'none' : 'block';
+  if (!visible) area.querySelector('textarea').focus();
+}
+
+function saveTaskDesc(taskId, val) {
+  const p = activeProject();
+  const t = p.tasks.find(t => t.id === taskId);
+  if (t) { t.desc = val.trim(); save(); renderProjectView(); }
+}
+
+/* ═══════════════════════════════════════════════════════
+   ACTIONS — SUBTASKS
+═══════════════════════════════════════════════════════ */
+function toggleSub(taskId, subId) {
+  const p = activeProject();
+  const t = p.tasks.find(t => t.id === taskId);
+  if (!t) return;
+  const s = t.subtasks.find(s => s.id === subId);
+  if (s) { s.done = !s.done; save(); renderProjectView(); }
+}
+
+function deleteSub(taskId, subId) {
+  const p = activeProject();
+  const t = p.tasks.find(t => t.id === taskId);
+  if (!t) return;
+  t.subtasks = t.subtasks.filter(s => s.id !== subId);
+  save();
+  renderProjectView();
+}
+
+function addSub(taskId, inp) {
+  const text = inp.value.trim();
+  if (!text) return;
+  const p = activeProject();
+  const t = p.tasks.find(t => t.id === taskId);
+  if (!t) return;
+  t.subtasks.push({ id: genId(), text, done: false });
+  inp.value = '';
+  save();
+  renderProjectView();
+}
+
+function addSubFromBtn(taskId, btn) {
+  const inp = btn.previousElementSibling;
+  addSub(taskId, inp);
+}
+
+function editSubStart(spanEl, taskId, subId) {
+  const wrap = spanEl.closest('.checklist-item');
+  spanEl.style.display = 'none';
+  const inp = wrap.querySelector('.checklist-text-edit');
+  inp.style.display = 'block';
+  inp.focus();
+  inp.select();
+}
+
+function editSubEnd(inp, taskId, subId) {
+  const val = inp.value.trim();
+  if (val) {
+    const p = activeProject();
+    const t = p.tasks.find(t => t.id === taskId);
+    const s = t && t.subtasks.find(s => s.id === subId);
+    if (s) { s.text = val; save(); }
+  }
+  renderProjectView();
+}
+
+/* ── UTILS ───────────────────────────────────────────── */
+function esc(str) {
+  return String(str || '')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+/* ═══════════════════════════════════════════════════════
+   SPIS PROJEKTÓW — INDEX VIEW
+═══════════════════════════════════════════════════════ */
+
+// Aktualny filtr wyszukiwania (gotowe pod przyszłą wyszukiwarkę)
+let indexSearchQuery = '';
+
+/* ── Przełączanie widoków ── */
+function showIndexView() {
+  indexSearchQuery = '';
+  document.getElementById('index-search-input').value = '';
+  document.getElementById('index-view').classList.add('visible');
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('project-view').style.display = 'none';
+  document.getElementById('btn-show-index').classList.add('active');
+  // Odznacz aktywny projekt w sidebarze
+  document.querySelectorAll('.project-item').forEach(el => el.classList.remove('active'));
+  renderIndexGrid(state.projects);
+}
+
+function hideIndexView() {
+  document.getElementById('index-view').classList.remove('visible');
+  document.getElementById('btn-show-index').classList.remove('active');
+}
+
+/* ── Handler wyszukiwarki ── */
+function onIndexSearch(query) {
+  indexSearchQuery = query.trim().toLowerCase();
+  const filtered = state.projects.filter(p =>
+    p.name.toLowerCase().includes(indexSearchQuery) ||
+    (p.opis || '').toLowerCase().includes(indexSearchQuery)
+  );
+  renderIndexGrid(filtered);
+}
+
+/* ── Generowanie kafelków ── */
+function renderIndexGrid(projects) {
+  const grid  = document.getElementById('index-grid');
+  const empty = document.getElementById('index-empty');
+  const count = document.getElementById('index-count');
+
+  grid.innerHTML = '';
+  count.textContent = projects.length + ' ' + pluralProjects(projects.length);
+
+  if (!projects.length) {
+    grid.style.display = 'none';
+    empty.style.display = 'flex';
+    return;
+  }
+
+  grid.style.display = 'grid';
+  empty.style.display = 'none';
+
+  projects.forEach(p => {
+    const tile = buildIndexTile(p);
+    grid.appendChild(tile);
+  });
+}
+
+/* ── Budowanie pojedynczego kafelka ── */
+function buildIndexTile(project) {
+  const todoCount = project.tasks.filter(t => !t.done).length;
+  const doneCount = project.tasks.filter(t =>  t.done).length;
+  const descText  = (project.opis || '').trim();
+
+  const tile = document.createElement('div');
+  tile.className = 'index-tile';
+
+  tile.innerHTML = `
+    <div class="tile-color-bar" style="background:${project.color}"></div>
+    <div class="tile-body">
+      <div class="tile-name-row">
+        <div class="tile-dot" style="background:${project.color}"></div>
+        <span class="tile-name">${esc(project.name)}</span>
+      </div>
+      <div class="tile-desc ${descText ? '' : 'empty'}">
+        ${descText ? esc(descText) : 'Brak opisu projektu.'}
+      </div>
+      <div class="tile-stats">
+        <div class="tile-stat">
+          <div class="tile-stat-dot todo"></div>
+          <span>${todoCount} do zrobienia</span>
+        </div>
+        <div class="tile-stat">
+          <div class="tile-stat-dot done"></div>
+          <span>${doneCount} zrobionych</span>
+        </div>
+      </div>
+    </div>
+    <div class="tile-footer">
+      <button class="btn-open-project" onclick="openProjectFromIndex('${project.id}')">
+        → Otwórz projekt
+      </button>
+    </div>
+  `;
+  return tile;
+}
+
+/* ── Otwarcie projektu z kafelka ── */
+function openProjectFromIndex(projectId) {
+  hideIndexView();
+  state.activeProjectId = projectId;
+  switchTab('opis');
+  save();
+  render();
+}
+
+/* ── Helper: odmiana słowa "projekt" ── */
+function pluralProjects(n) {
+  if (n === 1)                       return 'projekt';
+  if (n >= 2 && n <= 4)              return 'projekty';
+  return 'projektów';
+}
+
+/* ═══════════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════════ */
+load();
+if (state.projects.length && !state.activeProjectId) {
+  state.activeProjectId = state.projects[0].id;
+}
+render();
+</script>
+</body>
+</html>
