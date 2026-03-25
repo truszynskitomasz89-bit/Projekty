@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solo Leveling Fitness System</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #040810;
+  --bg2: #070f1a;
+  --bg3: #0a1525;
+  --blue: #00d4ff;
+  --blue2: #0099cc;
+  --red: #ff1a44;
+  --gold: #ffd700;
+  --green: #00ff88;
+  --text: #c8e0f0;
+  --text-dim: #4a6a88;
+  --border: #0d2a44;
+  --border-bright: #1a4a77;
+  --card: rgba(7,15,26,0.92);
+  --glow-blue: 0 0 10px rgba(0,212,255,0.5), 0 0 20px rgba(0,212,255,0.2);
+  --glow-red: 0 0 10px rgba(255,26,68,0.6), 0 0 25px rgba(255,26,68,0.3);
+  --glow-gold: 0 0 10px rgba(255,215,0,0.5), 0 0 20px rgba(255,215,0,0.2);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 15px;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+#bg-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+.scanlines {
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.06) 2px, rgba(0,0,0,0.06) 4px);
+  pointer-events: none; z-index: 1;
+}
+
+/* ── START SCREEN ── */
+#start-screen {
+  position: fixed; inset: 0; z-index: 100;
+  background: radial-gradient(ellipse at 50% 30%, #040f1f 0%, #020508 100%);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.start-logo {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(1.4rem, 5vw, 2.2rem);
+  font-weight: 900;
+  color: var(--blue);
+  text-shadow: var(--glow-blue);
+  letter-spacing: 4px;
+  text-align: center;
+  margin-bottom: 6px;
+  animation: flicker 5s infinite;
+}
+.start-sub {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  letter-spacing: 5px;
+  margin-bottom: 40px;
+}
+.start-card {
+  background: var(--bg2);
+  border: 1px solid var(--border-bright);
+  padding: 28px 24px;
+  width: 100%; max-width: 380px;
+  position: relative;
+}
+.start-card::before { content:''; position:absolute; top:-1px; left:-1px; width:14px; height:14px; border:2px solid var(--blue); border-right:none; border-bottom:none; }
+.start-card::after  { content:''; position:absolute; bottom:-1px; right:-1px; width:14px; height:14px; border:2px solid var(--blue); border-left:none; border-top:none; }
+.field-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.65rem; color: var(--blue); letter-spacing: 2px;
+  margin-bottom: 7px; margin-top: 18px;
+}
+.field-label:first-of-type { margin-top: 0; }
+input[type=text], input[type=number] {
+  width: 100%;
+  background: rgba(0,212,255,0.03);
+  border: 1px solid var(--border-bright);
+  color: var(--text);
+  padding: 10px 14px;
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+  font-size: 0.95rem;
+}
+input[type=text] { font-family: 'Orbitron', sans-serif; }
+input[type=number] { font-family: 'Share Tech Mono', monospace; font-size: 1.1rem; }
+input[type=text]:focus, input[type=number]:focus { border-color: var(--blue); box-shadow: var(--glow-blue); }
+.rank-select-row { display: flex; gap: 10px; margin-top: 4px; }
+.rank-btn {
+  flex: 1; padding: 10px 0;
+  background: transparent; border: 1px solid var(--border-bright);
+  color: var(--text-dim);
+  font-family: 'Orbitron', sans-serif; font-size: 1.1rem; font-weight: 700;
+  cursor: pointer; transition: all .2s;
+}
+.rank-btn.active[data-rank=E] { border-color:#888;color:#888;background:rgba(136,136,136,.12);text-shadow:0 0 8px #888; }
+.rank-btn.active[data-rank=D] { border-color:#4488ff;color:#4488ff;background:rgba(68,136,255,.12);text-shadow:0 0 8px #4488ff; }
+.rank-btn.active[data-rank=C] { border-color:#44ff88;color:#44ff88;background:rgba(68,255,136,.12);text-shadow:0 0 8px #44ff88; }
+.rank-btn:hover:not(.active) { border-color: var(--blue); color: var(--blue); }
+.btn-start {
+  width: 100%; margin-top: 28px; padding: 14px;
+  background: transparent; border: 2px solid var(--blue); color: var(--blue);
+  font-family: 'Orbitron', sans-serif; font-size: 1rem; font-weight: 700; letter-spacing: 3px;
+  cursor: pointer; position: relative; overflow: hidden; transition: all .3s;
+}
+.btn-start::before {
+  content:''; position:absolute; inset:0; background:var(--blue);
+  transform:translateX(-100%); transition:transform .3s; z-index:-1;
+}
+.btn-start:hover { color: var(--bg); }
+.btn-start:hover::before { transform:translateX(0); }
+
+/* ── MAIN APP LAYOUT ── */
+#app { position: relative; z-index: 2; max-width: 560px; margin: 0 auto; padding: 0 12px 80px; }
+
+/* ── HEADER ── */
+#header {
+  padding: 16px 0 10px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 14px;
+}
+.header-name { font-family: 'Orbitron', sans-serif; font-size: 0.72rem; color: var(--blue); letter-spacing: 2px; }
+.header-level { font-family: 'Share Tech Mono', monospace; font-size: 0.68rem; color: var(--text-dim); margin-top: 2px; }
+.header-rank-badge {
+  font-family: 'Orbitron', sans-serif; font-size: 0.85rem; font-weight: 900;
+  padding: 4px 14px; border: 1px solid currentColor;
+}
+
+/* ── TABS ── */
+#tabs { display: flex; border-bottom: 1px solid var(--border-bright); margin-bottom: 18px; }
+.tab-btn {
+  flex: 1; padding: 10px 0;
+  background: transparent; border: none; border-bottom: 2px solid transparent;
+  color: var(--text-dim);
+  font-family: 'Orbitron', sans-serif; font-size: 0.58rem; letter-spacing: 2px;
+  cursor: pointer; transition: all .2s; margin-bottom: -1px;
+}
+.tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); text-shadow: 0 0 6px rgba(0,212,255,.6); }
+.tab-btn:hover:not(.active) { color: var(--text); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ── CARD ── */
+.card {
+  background: var(--card); border: 1px solid var(--border);
+  padding: 16px; margin-bottom: 14px; position: relative;
+}
+.card::before { content:''; position:absolute; top:-1px; left:-1px; width:10px; height:10px; border:2px solid var(--border-bright); border-right:none; border-bottom:none; }
+.card::after  { content:''; position:absolute; bottom:-1px; right:-1px; width:10px; height:10px; border:2px solid var(--border-bright); border-left:none; border-top:none; }
+.card.hi::before, .card.hi::after { border-color: var(--blue); }
+.card-title {
+  font-family: 'Share Tech Mono', monospace; font-size: 0.63rem;
+  color: var(--blue); letter-spacing: 3px; margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.card-title::after { content:''; flex:1; height:1px; background:linear-gradient(to right,var(--border-bright),transparent); }
+
+/* ── STATUS ── */
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.stat-box { background: rgba(0,212,255,.03); border: 1px solid var(--border); padding: 10px 12px; text-align: center; }
+.stat-label { font-family: 'Share Tech Mono', monospace; font-size: 0.56rem; color: var(--text-dim); letter-spacing: 2px; margin-bottom: 4px; }
+.stat-val { font-family: 'Orbitron', sans-serif; font-size: 1.5rem; font-weight: 700; color: var(--blue); }
+.stat-val.gold { color: var(--gold); }
+.stat-val.green { color: var(--green); }
+.stat-val.sm { font-size: 1rem; line-height: 1.6; }
+
+.xp-bar-wrap { margin-bottom: 14px; }
+.xp-bar-label {
+  font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; color: var(--text-dim); letter-spacing: 2px;
+  display: flex; justify-content: space-between; margin-bottom: 5px;
+}
+.xp-bar-track { height: 8px; background: rgba(0,212,255,.06); border: 1px solid var(--border); position: relative; overflow: hidden; }
+.xp-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--blue2), var(--blue));
+  box-shadow: 0 0 8px var(--blue), 0 0 16px rgba(0,212,255,.25);
+  transition: width .5s ease;
+  position: relative;
+}
+.xp-bar-fill::after { content:''; position:absolute; right:0; top:0; bottom:0; width:2px; background:white; box-shadow:0 0 4px white; }
+
+.power-box {
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(0,255,136,.03); border: 1px solid rgba(0,255,136,.18);
+  padding: 10px 14px; margin-bottom: 14px;
+}
+.power-title { font-family: 'Share Tech Mono', monospace; font-size: 0.58rem; color: #4a9a6a; letter-spacing: 2px; }
+.power-name { font-family: 'Orbitron', sans-serif; font-size: 1.1rem; font-weight: 700; color: var(--green); text-shadow: 0 0 8px rgba(0,255,136,.4); }
+.power-type { font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; color: var(--text-dim); }
+
+.grind-section { position: relative; }
+.grind-lock {
+  display: none; position: absolute; inset: 0;
+  background: rgba(4,8,16,.88); border: 1px solid var(--red);
+  z-index: 10; flex-direction: column;
+  align-items: center; justify-content: center; text-align: center; padding: 16px;
+}
+.grind-lock.active { display: flex; }
+.grind-lock-title { font-family: 'Orbitron', sans-serif; font-size: 0.72rem; font-weight: 700; color: var(--red); letter-spacing: 2px; margin-bottom: 6px; text-shadow: var(--glow-red); }
+.grind-lock-sub { font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; color: var(--text-dim); }
+
+.grind-input-row { display: flex; gap: 8px; align-items: stretch; }
+.grind-input-row input { flex: 1; }
+.btn-action {
+  padding: 10px 18px;
+  background: rgba(0,212,255,.08); border: 1px solid var(--blue); color: var(--blue);
+  font-family: 'Orbitron', sans-serif; font-size: 0.68rem; letter-spacing: 1px;
+  cursor: pointer; white-space: nowrap; transition: all .2s;
+}
+.btn-action:hover { background: rgba(0,212,255,.18); box-shadow: var(--glow-blue); }
+.btn-action.red { border-color: var(--red); color: var(--red); background: rgba(255,26,68,.07); }
+.btn-action.red:hover { background: rgba(255,26,68,.18); box-shadow: var(--glow-red); }
+.grind-info { font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; color: var(--text-dim); margin-top: 7px; }
+
+.debuff-banner {
+  display: none;
+  background: rgba(255,26,68,.07); border: 1px solid rgba(255,26,68,.35);
+  padding: 8px 14px; margin-bottom: 14px;
+  font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; color: var(--red); letter-spacing: 1px;
+  animation: pulse-red 2s infinite;
+}
+.debuff-banner.active { display: block; }
+
+.rg-banner {
+  background: rgba(255,26,68,.06); border: 1px solid var(--red);
+  padding: 14px; margin-bottom: 14px; text-align: center;
+  animation: pulse-red 1.5s infinite;
+}
+.rg-banner-title { font-family: 'Orbitron', sans-serif; font-size: 0.82rem; font-weight: 900; color: var(--red); text-shadow: var(--glow-red); letter-spacing: 3px; margin-bottom: 4px; }
+.rg-banner-sub { font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; color: rgba(255,26,68,.65); }
+
+/* ── QUEST ── */
+.quest-state-inactive, .quest-state-active, .quest-state-done { display: none; }
+.quest-state-inactive.show, .quest-state-active.show, .quest-state-done.show { display: block; }
+
+.quest-header-row { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; }
+.quest-name { font-family: 'Orbitron', sans-serif; font-size: 0.85rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.quest-req-text { font-family: 'Share Tech Mono', monospace; font-size: 0.62rem; color: var(--text-dim); }
+.quest-timer { font-family: 'Orbitron', sans-serif; font-size: 1.3rem; font-weight: 700; color: var(--blue); text-shadow: 0 0 8px rgba(0,212,255,.4); text-align: right; white-space: nowrap; }
+.quest-timer.warn { color: var(--red); text-shadow: var(--glow-red); animation: pulse-red 1s infinite; }
+
+.qpbar-track { height: 12px; background: rgba(0,212,255,.05); border: 1px solid var(--border); position: relative; overflow: hidden; margin-bottom: 4px; }
+.qpbar-fill { height: 100%; background: linear-gradient(90deg, #005577, var(--blue)); box-shadow: 0 0 8px var(--blue); transition: width .4s; }
+.qpbar-label { font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; color: var(--text-dim); display: flex; justify-content: space-between; margin-bottom: 12px; }
+
+.reward-preview { background: rgba(255,215,0,.03); border: 1px solid rgba(255,215,0,.2); padding: 10px 14px; margin-top: 10px; }
+.reward-row { font-family: 'Share Tech Mono', monospace; font-size: 0.62rem; color: var(--gold); line-height: 1.8; }
+.penalty-preview { background: rgba(255,26,68,.03); border: 1px solid rgba(255,26,68,.15); padding: 10px 14px; margin-top: 10px; }
+.penalty-row { font-family: 'Share Tech Mono', monospace; font-size: 0.62rem; color: rgba(255,26,68,.7); line-height: 1.8; }
+
+.btn-accept-quest {
+  width: 100%; margin-top: 14px; padding: 14px;
+  background: transparent; border: 2px solid var(--blue); color: var(--blue);
+  font-family: 'Orbitron', sans-serif; font-size: 0.82rem; font-weight: 700; letter-spacing: 3px;
+  cursor: pointer; transition: all .3s;
+}
+.btn-accept-quest:hover { background: rgba(0,212,255,.1); box-shadow: var(--glow-blue); }
+
+.quest-done-box { text-align: center; padding: 22px; }
+.quest-done-icon { font-size: 2.8rem; margin-bottom: 8px; }
+.quest-done-title { font-family: 'Orbitron', sans-serif; font-size: 1rem; font-weight: 700; color: var(--green); text-shadow: 0 0 10px rgba(0,255,136,.4); margin-bottom: 4px; }
+.quest-done-sub { font-family: 'Share Tech Mono', monospace; font-size: 0.62rem; color: var(--text-dim); }
+
+/* ── LOGS ── */
+.log-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.log-row:last-child { border-bottom: none; }
+.log-key { font-family: 'Share Tech Mono', monospace; font-size: 0.63rem; color: var(--text-dim); letter-spacing: 1px; }
+.log-val { font-family: 'Orbitron', sans-serif; font-size: 0.85rem; font-weight: 700; color: var(--text); }
+
+/* ── DUNGEON ── */
+.dung-card {
+  border: 1px solid var(--border); background: var(--card);
+  padding: 14px 16px; margin-bottom: 10px; position: relative;
+}
+.dung-card.locked { opacity: .4; }
+.dung-card.avail { border-color: var(--border-bright); }
+.dung-card.raiding { border-color: var(--red); box-shadow: var(--glow-red); }
+.dung-row { display: flex; align-items: center; justify-content: space-between; }
+.dung-id-badge { font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; color: var(--text-dim); background: rgba(0,0,0,.45); padding: 2px 8px; border: 1px solid var(--border); margin-right: 8px; }
+.dung-name { font-family: 'Orbitron', sans-serif; font-size: 0.78rem; font-weight: 700; color: var(--text); }
+.dung-req-text { font-family: 'Share Tech Mono', monospace; font-size: 0.58rem; color: var(--text-dim); margin-top: 4px; }
+.dung-reward-row { font-family: 'Share Tech Mono', monospace; font-size: 0.58rem; color: var(--green); margin-top: 3px; }
+
+.raid-active-section { margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,26,68,.2); }
+.raid-timer-label { font-family: 'Share Tech Mono', monospace; font-size: 0.58rem; color: var(--red); letter-spacing: 2px; margin-bottom: 4px; }
+.raid-timer-val { font-family: 'Orbitron', sans-serif; font-size: 1.3rem; font-weight: 700; color: var(--red); text-shadow: var(--glow-red); margin-bottom: 8px; }
+.raid-pbar-track { height: 6px; background: rgba(255,26,68,.1); border: 1px solid rgba(255,26,68,.3); margin-bottom: 10px; overflow: hidden; }
+.raid-pbar-fill { height: 100%; background: var(--red); box-shadow: 0 0 6px var(--red); transition: width .4s; }
+.raid-input-row { display: flex; gap: 8px; }
+.raid-input-row input { flex: 1; }
+
+/* ── RANK GATE (quest tab) ── */
+.rg-pbar-track { height: 10px; background: rgba(255,26,68,.1); border: 1px solid rgba(255,26,68,.3); margin: 12px 0; overflow: hidden; }
+.rg-pbar-fill { height: 100%; background: linear-gradient(90deg, #880022, var(--red)); box-shadow: 0 0 8px var(--red); transition: width .4s; }
+.rg-input-row { display: flex; gap: 8px; margin-top: 10px; }
+.rg-input-row input { flex: 1; }
+
+/* ── MODALS ── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(2,5,10,.92);
+  align-items: center; justify-content: center; padding: 20px;
+}
+.modal-overlay.show { display: flex; }
+.modal-box {
+  background: var(--bg2); border: 1px solid var(--border-bright);
+  padding: 28px 24px; max-width: 400px; width: 100%;
+  position: relative; text-align: center;
+}
+.modal-box::before { content:''; position:absolute; top:-1px; left:-1px; width:14px; height:14px; border:2px solid var(--blue); border-right:none; border-bottom:none; }
+.modal-box::after  { content:''; position:absolute; bottom:-1px; right:-1px; width:14px; height:14px; border:2px solid var(--blue); border-left:none; border-top:none; }
+.modal-box.r::before, .modal-box.r::after { border-color: var(--red); }
+.modal-box.g::before, .modal-box.g::after { border-color: var(--gold); }
+.modal-icon { font-size: 3rem; margin-bottom: 12px; }
+.modal-title { font-family: 'Orbitron', sans-serif; font-size: 1.1rem; font-weight: 900; margin-bottom: 8px; }
+.modal-body { font-family: 'Share Tech Mono', monospace; font-size: 0.66rem; color: var(--text-dim); line-height: 1.9; margin-bottom: 20px; }
+.modal-btn {
+  padding: 12px 28px; background: transparent; border: 2px solid var(--blue); color: var(--blue);
+  font-family: 'Orbitron', sans-serif; font-size: 0.78rem; font-weight: 700; letter-spacing: 2px;
+  cursor: pointer; transition: all .2s; margin: 4px;
+}
+.modal-btn:hover { background: rgba(0,212,255,.1); }
+.modal-btn.r { border-color: var(--red); color: var(--red); }
+.modal-btn.r:hover { background: rgba(255,26,68,.12); }
+.modal-btn.g { border-color: var(--gold); color: var(--gold); }
+.modal-btn.g:hover { background: rgba(255,215,0,.12); }
+
+/* ── OVERLAYS ── */
+#levelup-overlay {
+  display: none; position: fixed; inset: 0; z-index: 300;
+  background: rgba(0,0,0,.9); align-items: center; justify-content: center; flex-direction: column;
+}
+#levelup-overlay.show { display: flex; animation: fade-in .3s ease; }
+.levelup-title { font-family: 'Orbitron', sans-serif; font-size: 2rem; font-weight: 900; color: var(--blue); text-shadow: var(--glow-blue); letter-spacing: 5px; animation: pop-in .5s ease; }
+.levelup-level { font-family: 'Orbitron', sans-serif; font-size: 5rem; font-weight: 900; color: var(--gold); text-shadow: var(--glow-gold); animation: pop-in .5s .1s both; }
+.levelup-hint { font-family: 'Share Tech Mono', monospace; font-size: 0.62rem; color: var(--text-dim); margin-top: 20px; letter-spacing: 2px; }
+
+#rankup-overlay {
+  display: none; position: fixed; inset: 0; z-index: 300;
+  background: rgba(0,0,0,.93); align-items: center; justify-content: center; flex-direction: column;
+}
+#rankup-overlay.show { display: flex; animation: fade-in .3s ease; }
+.rankup-label { font-family: 'Orbitron', sans-serif; font-size: 1.3rem; font-weight: 700; color: var(--text-dim); letter-spacing: 5px; margin-bottom: 8px; }
+.rankup-rank { font-family: 'Orbitron', sans-serif; font-size: 6rem; font-weight: 900; animation: pop-in .5s ease; }
+.rankup-hint { font-family: 'Share Tech Mono', monospace; font-size: 0.62rem; color: var(--text-dim); margin-top: 14px; letter-spacing: 2px; }
+
+/* ── TOAST ── */
+#toast-container { position: fixed; bottom: 20px; right: 16px; z-index: 500; display: flex; flex-direction: column; gap: 8px; max-width: 280px; }
+.toast {
+  background: var(--bg2); border-left: 3px solid var(--blue);
+  padding: 9px 13px;
+  font-family: 'Share Tech Mono', monospace; font-size: 0.63rem; color: var(--text);
+  letter-spacing: 0.5px; animation: slide-in .3s ease; line-height: 1.5;
+}
+.toast.red { border-left-color: var(--red); }
+.toast.gold { border-left-color: var(--gold); }
+.toast.green { border-left-color: var(--green); }
+
+/* ── XP FLOAT ── */
+.xp-float {
+  position: fixed; pointer-events: none; z-index: 400;
+  font-family: 'Orbitron', sans-serif; font-size: 1.1rem; font-weight: 700;
+  color: var(--blue); text-shadow: var(--glow-blue);
+  animation: float-up 1.5s ease-out forwards;
+}
+
+/* ── KEYFRAMES ── */
+@keyframes flicker { 0%,91%,93%,95%,100%{opacity:1} 92%,94%{opacity:.2} }
+@keyframes pulse-red { 0%,100%{opacity:1} 50%{opacity:.45} }
+@keyframes fade-in { from{opacity:0} to{opacity:1} }
+@keyframes pop-in { from{transform:scale(0.3);opacity:0} to{transform:scale(1);opacity:1} }
+@keyframes float-up { from{transform:translateY(0);opacity:1} to{transform:translateY(-90px);opacity:0} }
+@keyframes slide-in { from{transform:translateX(110%);opacity:0} to{transform:translateX(0);opacity:1} }
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+<div class="scanlines"></div>
+
+<!-- ══ START SCREEN ══ -->
+<div id="start-screen">
+  <div class="start-logo">SOLO LEVELING</div>
+  <div class="start-sub">FITNESS SYSTEM v1.0</div>
+  <div class="start-card">
+    <div class="field-label">// HUNTER NAME</div>
+    <input type="text" id="start-name" placeholder="Wprowadź imię łowcy…" maxlength="20">
+    <div class="field-label">// RANGA STARTOWA</div>
+    <div class="rank-select-row">
+      <button class="rank-btn active" data-rank="E">E</button>
+      <button class="rank-btn" data-rank="D">D</button>
+      <button class="rank-btn" data-rank="C">C</button>
+    </div>
+    <button class="btn-start" id="btn-start">▶ ZACZNIJ TRENING</button>
+  </div>
+</div>
+
+<!-- ══ MAIN APP ══ -->
+<div id="app" style="display:none;">
+
+  <!-- Header -->
+  <div id="header">
+    <div>
+      <div class="header-name" id="hdr-name">HUNTER: —</div>
+      <div class="header-level" id="hdr-lvl">POZIOM —</div>
+    </div>
+    <div class="header-rank-badge" id="hdr-rank">E</div>
+  </div>
+
+  <!-- Tabs nav -->
+  <div id="tabs">
+    <button class="tab-btn active" data-tab="status">STATUS</button>
+    <button class="tab-btn" data-tab="quest">QUEST</button>
+    <button class="tab-btn" data-tab="logs">LOGS</button>
+    <button class="tab-btn" data-tab="dungeon">DUNGEON</button>
+  </div>
+
+  <!-- ══ STATUS TAB ══ -->
+  <div class="tab-panel active" id="tab-status">
+
+    <div class="debuff-banner" id="debuff-banner">
+      ⚠ KLĄTWA LENIWCA — XP -50% | WYGASA: <span id="debuff-countdown">--:--:--</span>
+    </div>
+
+    <div class="rg-banner" id="rg-status-banner" style="display:none;">
+      <div class="rg-banner-title">⛩ BRAMA RANGI AKTYWNA</div>
+      <div class="rg-banner-sub">Zakładka QUEST → ukończ Test Awansu aby odblokować grind</div>
+    </div>
+
+    <div class="card hi">
+      <div class="card-title">STATYSTYKI ŁOWCY</div>
+      <div class="stats-grid">
+        <div class="stat-box"><div class="stat-label">POZIOM</div><div class="stat-val" id="s-level">1</div></div>
+        <div class="stat-box"><div class="stat-label">SIŁA (STR)</div><div class="stat-val green" id="s-str">0</div></div>
+        <div class="stat-box"><div class="stat-label">ZŁOTO</div><div class="stat-val gold" id="s-gold">0</div></div>
+        <div class="stat-box"><div class="stat-label">XP</div><div class="stat-val sm" id="s-xp">0/100</div></div>
+      </div>
+      <div class="xp-bar-wrap">
+        <div class="xp-bar-label">
+          <span>PASEK DOŚWIADCZENIA</span>
+          <span id="xp-label">0 / 100</span>
+        </div>
+        <div class="xp-bar-track">
+          <div class="xp-bar-fill" id="xp-bar" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="power-box">
+      <div>
+        <div class="power-title">// POZIOM MOCY</div>
+        <div class="power-name" id="power-name">MYSZ</div>
+      </div>
+      <div style="text-align:right;">
+        <div class="power-title">// TYP POMPEK</div>
+        <div style="font-family:'Orbitron',sans-serif;font-size:0.75rem;font-weight:700;color:var(--blue);" id="pushup-type-name">Klasyczne</div>
+        <div class="power-type" id="pushup-mult">×1 XP/pompkę</div>
+      </div>
+    </div>
+
+    <div class="card grind-section">
+      <div class="card-title">TRENING (GRIND)</div>
+      <div class="grind-lock" id="grind-lock">
+        <div class="grind-lock-title">SYSTEM ZABLOKOWANY</div>
+        <div class="grind-lock-sub" id="grind-lock-reason">—</div>
+      </div>
+      <div class="grind-input-row">
+        <input type="number" id="grind-input" min="1" max="9999" placeholder="Liczba pompek…">
+        <button class="btn-action" id="btn-grind">DODAJ XP</button>
+      </div>
+      <div class="grind-info" id="grind-info">Wpisz liczbę pompek aby uzyskać XP</div>
+    </div>
+
+  </div>
+
+  <!-- ══ QUEST TAB ══ -->
+  <div class="tab-panel" id="tab-quest">
+
+    <!-- Rank Gate section (shown when gate active) -->
+    <div id="rg-section" style="display:none;">
+      <div class="card" style="border-color:var(--red);">
+        <div class="card-title" style="color:var(--red);">⛩ TEST AWANSU — BRAMA RANGI</div>
+        <div style="text-align:center;margin-bottom:14px;">
+          <div style="font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--text-dim);margin-bottom:5px;">WYMAGANE POMPKI</div>
+          <div style="font-family:'Orbitron',sans-serif;font-size:2.2rem;font-weight:900;color:var(--red);text-shadow:var(--glow-red);" id="rg-required">0</div>
+        </div>
+        <div class="rg-pbar-track"><div class="rg-pbar-fill" id="rg-bar" style="width:0%"></div></div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--text-dim);display:flex;justify-content:space-between;margin-bottom:12px;">
+          <span>POSTĘP</span><span id="rg-progress-text">0 / 0</span>
+        </div>
+        <div class="rg-input-row">
+          <input type="number" id="rg-input" min="1" max="9999" placeholder="Pompki testu…">
+          <button class="btn-action red" id="btn-rg">WYKONAJ</button>
+        </div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:rgba(255,26,68,.55);margin-top:8px;text-align:center;">
+          Ukończ test → awans rangi + odblokowanie grinda
+        </div>
+      </div>
+    </div>
+
+    <!-- Normal Daily Quest -->
+    <div id="quest-normal-section">
+      <div class="card">
+        <div class="card-title">DZIENNE ZADANIE</div>
+
+        <div class="quest-state-inactive show" id="quest-inactive">
+          <div style="margin-bottom:12px;">
+            <div class="quest-name">TRENING DNIA</div>
+            <div class="quest-req-text">WYMAGANE: <span id="q-req-prev" style="color:var(--blue);">0</span> POMPEK</div>
+          </div>
+          <div class="reward-preview">
+            <div class="reward-row">▸ XP: +20% wymagań aktualnego poziomu</div>
+            <div class="reward-row">▸ ZŁOTO: +<span id="q-gold-preview">0</span></div>
+            <div class="reward-row">▸ SERIA: +1</div>
+          </div>
+          <div class="penalty-preview">
+            <div class="penalty-row">⚠ KARA ZA NIEUKOŃCZENIE DO PÓŁNOCY:</div>
+            <div class="penalty-row">▸ Klątwa Leniwca: XP -50% przez 24h</div>
+            <div class="penalty-row">▸ Reset serii do 0</div>
+          </div>
+          <button class="btn-accept-quest" id="btn-accept-quest">▶ PRZYJMIJ ZADANIE</button>
+        </div>
+
+        <div class="quest-state-active" id="quest-active">
+          <div class="quest-header-row">
+            <div>
+              <div class="quest-name">TRENING DNIA</div>
+              <div class="quest-req-text">CEL: <span id="q-req-active" style="color:var(--blue);">0</span> POMPEK</div>
+            </div>
+            <div>
+              <div class="quest-timer" id="q-timer">00:00:00</div>
+              <div style="font-family:'Share Tech Mono',monospace;font-size:0.54rem;color:var(--text-dim);text-align:right;">DO PÓŁNOCY</div>
+            </div>
+          </div>
+          <div class="qpbar-track"><div class="qpbar-fill" id="q-pbar" style="width:0%"></div></div>
+          <div class="qpbar-label"><span>POSTĘP</span><span id="q-progress-text">0 / 0</span></div>
+          <div style="display:flex;gap:8px;">
+            <input type="number" id="q-input" min="1" max="9999" placeholder="Pompki zadania…" style="flex:1;">
+            <button class="btn-action" id="btn-q-submit">DODAJ</button>
+          </div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:var(--text-dim);margin-top:7px;">
+            Pompki zadania nie dają XP bezpośrednio — nagroda po ukończeniu
+          </div>
+        </div>
+
+        <div class="quest-state-done" id="quest-done">
+          <div class="quest-done-box">
+            <div class="quest-done-icon">✅</div>
+            <div class="quest-done-title">ZADANIE UKOŃCZONE!</div>
+            <div class="quest-done-sub">Następne dostępne o północy</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ LOGS TAB ══ -->
+  <div class="tab-panel" id="tab-logs">
+    <div class="card">
+      <div class="card-title">DZIENNIK ŁOWCY</div>
+      <div class="log-row"><span class="log-key">DATA REJESTRACJI</span><span class="log-val" id="l-reg" style="color:var(--blue);">—</span></div>
+      <div class="log-row"><span class="log-key">DNI W SYSTEMIE</span><span class="log-val" id="l-days">0</span></div>
+      <div class="log-row"><span class="log-key">RANGA</span><span class="log-val" id="l-rank">E</span></div>
+      <div class="log-row"><span class="log-key">POZIOM</span><span class="log-val" id="l-level" style="color:var(--blue);">1</span></div>
+      <div class="log-row"><span class="log-key">ŁĄCZNE POMPKI</span><span class="log-val" id="l-total" style="color:var(--green);">0</span></div>
+      <div class="log-row"><span class="log-key">AKTUALNA SERIA</span><span class="log-val" id="l-streak" style="color:var(--gold);">0</span></div>
+      <div class="log-row"><span class="log-key">REKORD SERII</span><span class="log-val" id="l-max-streak" style="color:var(--red);">0</span></div>
+      <div class="log-row"><span class="log-key">ZŁOTO</span><span class="log-val" id="l-gold" style="color:var(--gold);">0</span></div>
+      <div class="log-row"><span class="log-key">SIŁA (STR)</span><span class="log-val" id="l-str" style="color:var(--green);">0</span></div>
+      <div class="log-row"><span class="log-key">LOCHY UKOŃCZONE</span><span class="log-val" id="l-dungs">0</span></div>
+    </div>
+  </div>
+
+  <!-- ══ DUNGEON TAB ══ -->
+  <div class="tab-panel" id="tab-dungeon">
+    <div id="dung-daily-info" style="display:none;margin-bottom:12px;">
+      <div style="background:rgba(255,26,68,.05);border:1px solid rgba(255,26,68,.3);padding:10px 14px;font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:rgba(255,26,68,.75);text-align:center;">
+        ⚠ LIMIT DZIENNY OSIĄGNIĘTY — Następny rajd dostępny jutro
+      </div>
+    </div>
+    <div id="dung-list"></div>
+  </div>
+
+</div><!-- end #app -->
+
+<!-- MODALS -->
+<div class="modal-overlay" id="modal-dung-confirm">
+  <div class="modal-box r">
+    <div class="modal-icon">⚔️</div>
+    <div class="modal-title" style="color:var(--red);">WEJŚĆ DO LOCHU?</div>
+    <div class="modal-body" id="modal-dung-body">—</div>
+    <button class="modal-btn r" id="btn-confirm-enter">WEJDŹ</button>
+    <button class="modal-btn" id="btn-cancel-enter">ANULUJ</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-raid-result">
+  <div class="modal-box" id="raid-result-box">
+    <div class="modal-icon" id="raid-result-icon">🏆</div>
+    <div class="modal-title" id="raid-result-title">ZWYCIĘSTWO!</div>
+    <div class="modal-body" id="raid-result-body">—</div>
+    <button class="modal-btn" id="btn-raid-close">ZAMKNIJ</button>
+  </div>
+</div>
+
+<!-- LEVEL UP OVERLAY -->
+<div id="levelup-overlay">
+  <div class="levelup-title">LEVEL UP!</div>
+  <div class="levelup-level" id="levelup-num">2</div>
+  <div class="levelup-hint">// KLIKNIJ ABY KONTYNUOWAĆ</div>
+</div>
+
+<!-- RANK UP OVERLAY -->
+<div id="rankup-overlay">
+  <div class="rankup-label">AWANS RANGI</div>
+  <div class="rankup-rank" id="rankup-rank">D</div>
+  <div class="rankup-hint">// KLIKNIJ ABY KONTYNUOWAĆ</div>
+</div>
+
+<!-- Toast container -->
+<div id="toast-container"></div>
+
+<script>
+// ════════════════════════════════════════════════
+//  CONSTANTS
+// ════════════════════════════════════════════════
+const SAVE_KEY = 'slFitV4';
+const RANKS = ['E','D','C','B','A','S'];
+const RC = {E:'#888888',D:'#4488ff',C:'#44ff88',B:'#ff8844',A:'#ff4444',S:'#ff0066'};
+const QUEST_REQ = {E:30,D:50,C:75,B:100,A:150,S:200};
+const DUNGEON_DATA = [
+  {id:1, name:'Krypta Cieni',      req:100, str:2,  xp:500,   gold:100},
+  {id:2, name:'Jaskinia Pająków',  req:200, str:4,  xp:1200,  gold:250},
+  {id:3, name:'Ruiny Zagłady',     req:300, str:6,  xp:2800,  gold:500},
+  {id:4, name:'Wieża Chaosu',      req:400, str:9,  xp:6000,  gold:1000},
+  {id:5, name:'Brama Wieczności',  req:500, str:14, xp:12000, gold:2500},
+];
+const RAID_MS = 4 * 60 * 60 * 1000;
+
+// ════════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════════
+let S = {};
+
+function mkState(name, rank) {
+  return {
+    name, rank,
+    level: 1, xp: 0, str: 0, gold: 0,
+    totalPushups: 0,
+    regDate: new Date().toISOString(),
+    streak: 0, maxStreak: 0,
+    // Quest
+    qActive: false, qDate: null, qDone: false, qPushups: 0,
+    // Debuff
+    debuff: false, debuffExp: null,
+    // Dungeon
+    dungMax: 1, dungDate: null, activeDung: null,
+    totalDungs: 0,
+    // Rank Gate
+    gateActive: false, gateDone: 0, gateReq: 0,
+  };
+}
+
+function save() { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); }
+function load() {
+  try {
+    const r = localStorage.getItem(SAVE_KEY);
+    if (r) { S = JSON.parse(r); return true; }
+  } catch(e) {}
+  return false;
+}
+
+// ════════════════════════════════════════════════
+//  FORMULAS
+// ════════════════════════════════════════════════
+function xpReq(level) { return 100 * Math.pow(2, level - 1); }
+function mult(str)     { return str>=50?10: str>=25?5: str>=10?2: 1; }
+function typeName(str) { return str>=50?'Na Podwyższeniu': str>=25?'Diamentowe': str>=10?'Szerokie':'Klasyczne'; }
+function powerName(str){ return str>=51?'TYTAN': str>=31?'SŁOŃ': str>=16?'NIEDŹWIEDŹ': str>=6?'WILK':'MYSZ'; }
+function today()       { return new Date().toISOString().slice(0,10); }
+function pad2(n)       { return String(n).padStart(2,'0'); }
+function fmtMs(ms)     {
+  const t = Math.max(0,ms);
+  const h = Math.floor(t/3600000);
+  const m = Math.floor((t%3600000)/60000);
+  const s = Math.floor((t%60000)/1000);
+  return `${pad2(h)}:${pad2(m)}:${pad2(s)}`;
+}
+
+// ════════════════════════════════════════════════
+//  XP / LEVEL CHECK
+// ════════════════════════════════════════════════
+function addXP(raw) {
+  const eff = S.debuff ? Math.floor(raw * 0.5) : raw;
+  S.xp += eff;
+  doLevelUps();
+  return eff;
+}
+
+function doLevelUps() {
+  while (S.xp >= xpReq(S.level)) {
+    S.xp -= xpReq(S.level);
+    S.level++;
+    if (S.level % 10 === 0 && S.rank !== 'S' && !S.gateActive) {
+      S.gateActive = true;
+      S.gateDone = 0;
+      S.gateReq = QUEST_REQ[S.rank] * 4;
+    } else if (!S.gateActive) {
+      showLevelUp(S.level);
+    }
+  }
+}
+
+// ════════════════════════════════════════════════
+//  GRIND
+// ════════════════════════════════════════════════
+$('btn-grind').onclick = doGrind;
+$('grind-input').onkeydown = e => { if(e.key==='Enter') doGrind(); };
+
+function doGrind() {
+  if (S.qActive && !S.qDone) { toast('Quest aktywny — grind zablokowany!','red'); return; }
+  if (S.gateActive) { toast('Brama Rangi aktywna — ukończ test!','red'); return; }
+  const n = parseInt($('grind-input').value);
+  if (!n || n < 1) { toast('Wprowadź liczbę pompek!','red'); return; }
+  const m = mult(S.str);
+  const eff = addXP(n * m);
+  S.totalPushups += n;
+  $('grind-input').value = '';
+  xpFloat(`+${eff} XP`);
+  toast(`+${eff} XP za ${n} pompek (${typeName(S.str)} ×${m})`,'blue');
+  save(); render();
+}
+
+// ════════════════════════════════════════════════
+//  DAILY QUEST
+// ════════════════════════════════════════════════
+$('btn-accept-quest').onclick = acceptQuest;
+$('btn-q-submit').onclick = submitQuest;
+$('q-input').onkeydown = e => { if(e.key==='Enter') submitQuest(); };
+
+function acceptQuest() {
+  if (S.qActive || S.qDone || S.gateActive) return;
+  S.qActive = true;
+  S.qDate = today();
+  S.qPushups = 0;
+  save(); render();
+  toast('Zadanie przyjęte! Grind zablokowany do ukończenia.','blue');
+}
+
+function submitQuest() {
+  if (!S.qActive || S.qDone) return;
+  const n = parseInt($('q-input').value);
+  if (!n || n < 1) { toast('Wprowadź liczbę pompek!','red'); return; }
+  S.qPushups += n;
+  S.totalPushups += n;
+  $('q-input').value = '';
+  const req = QUEST_REQ[S.rank];
+  if (S.qPushups >= req) finishQuest();
+  else { toast(`Postęp: ${S.qPushups}/${req}`,'blue'); save(); render(); }
+}
+
+function finishQuest() {
+  S.qDone = true; S.qActive = false;
+  const xpBonus = Math.floor(xpReq(S.level) * 0.20);
+  const goldBonus = 50 + S.level * 5;
+  const eff = addXP(xpBonus);
+  S.gold += goldBonus;
+  S.streak++;
+  if (S.streak > S.maxStreak) S.maxStreak = S.streak;
+  save(); render();
+  xpFloat(`+${eff} XP`);
+  toast(`✅ QUEST! +${eff} XP, +${goldBonus} złota, seria: ${S.streak}`,'gold');
+}
+
+function checkMissedQuest() {
+  if (S.qActive && !S.qDone && S.qDate && S.qDate < today()) {
+    S.qActive = false; S.qDone = false; S.qPushups = 0; S.qDate = null;
+    S.streak = 0;
+    S.debuff = true;
+    S.debuffExp = Date.now() + 24*60*60*1000;
+    save();
+    toast('⚠ KLĄTWA LENIWCA! Nie ukończyłeś questa. XP -50% przez 24h.','red');
+  }
+}
+
+function checkNewDay() {
+  if ((S.qDone || !S.qActive) && S.qDate && S.qDate < today()) {
+    S.qDone = false; S.qActive = false; S.qPushups = 0; S.qDate = null;
+  }
+}
+
+// ════════════════════════════════════════════════
+//  RANK GATE
+// ════════════════════════════════════════════════
+$('btn-rg').onclick = submitGate;
+$('rg-input').onkeydown = e => { if(e.key==='Enter') submitGate(); };
+
+function submitGate() {
+  const n = parseInt($('rg-input').value);
+  if (!n || n < 1) { toast('Wprowadź liczbę pompek!','red'); return; }
+  S.gateDone += n;
+  S.totalPushups += n;
+  $('rg-input').value = '';
+  if (S.gateDone >= S.gateReq) passGate();
+  else { toast(`Test Awansu: ${S.gateDone}/${S.gateReq}`,'blue'); save(); render(); }
+}
+
+function passGate() {
+  const idx = RANKS.indexOf(S.rank);
+  if (idx < RANKS.length - 1) S.rank = RANKS[idx+1];
+  S.gateActive = false; S.gateDone = 0; S.gateReq = 0;
+  S.gold += 500;
+  save();
+  showRankUp(S.rank);
+  render();
+  toast(`🏆 AWANS NA RANGĘ ${S.rank}! +500 złota`,'gold');
+}
+
+// ════════════════════════════════════════════════
+//  DUNGEON
+// ════════════════════════════════════════════════
+let pendingDung = null;
+
+$('btn-confirm-enter').onclick = () => {
+  closeModal('modal-dung-confirm');
+  if (pendingDung !== null) enterDungeon(pendingDung);
+};
+$('btn-cancel-enter').onclick = () => closeModal('modal-dung-confirm');
+$('btn-raid-close').onclick = () => closeModal('modal-raid-result');
+
+function promptDung(id) {
+  const d = DUNGEON_DATA.find(x=>x.id===id);
+  pendingDung = id;
+  $('modal-dung-body').innerHTML = `<b>${d.name}</b><br>${d.req} pompek w ciągu 4 godzin<br><br>Nagrody: <b style="color:var(--green)">+${d.str} STR</b> | +${d.xp} XP | +${d.gold} złota<br><br><span style="color:var(--red)">Limit: 1 wejście dziennie (niezależnie od wyniku)</span>`;
+  openModal('modal-dung-confirm');
+}
+
+function enterDungeon(id) {
+  S.dungDate = today();
+  S.activeDung = {id, startTime: Date.now(), pushups: 0};
+  save(); render();
+  const d = DUNGEON_DATA.find(x=>x.id===id);
+  toast(`⚔️ Wchodzisz do ${d.name}! Masz 4 godziny.`,'red');
+}
+
+function submitRaid() {
+  if (!S.activeDung) return;
+  const n = parseInt($('raid-input').value);
+  if (!n || n < 1) { toast('Wprowadź liczbę pompek!','red'); return; }
+  S.activeDung.pushups += n;
+  S.totalPushups += n;
+  $('raid-input').value = '';
+  const d = DUNGEON_DATA.find(x=>x.id===S.activeDung.id);
+  if (S.activeDung.pushups >= d.req) endRaid(true);
+  else { toast(`Rajd: ${S.activeDung.pushups}/${d.req}`,'red'); save(); render(); }
+}
+
+function endRaid(win) {
+  const d = DUNGEON_DATA.find(x=>x.id===S.activeDung.id);
+  if (win) {
+    S.str += d.str;
+    const eff = addXP(d.xp);
+    S.gold += d.gold;
+    S.totalDungs++;
+    if (d.id === S.dungMax && d.id < 5) S.dungMax = d.id + 1;
+    const rb = $('raid-result-box');
+    rb.className = 'modal-box g';
+    $('raid-result-icon').textContent = '🏆';
+    $('raid-result-title').textContent = 'ZWYCIĘSTWO!';
+    $('raid-result-title').style.color = 'var(--gold)';
+    $('raid-result-body').innerHTML = `<b style="color:var(--gold)">${d.name}</b> pokonana!<br>+${d.str} STR &nbsp;|&nbsp; +${eff} XP &nbsp;|&nbsp; +${d.gold} złota`;
+    $('btn-raid-close').className = 'modal-btn g';
+    $('btn-raid-close').textContent = 'ODBIERZ NAGRODĘ';
+  } else {
+    $('raid-result-box').className = 'modal-box r';
+    $('raid-result-icon').textContent = '💀';
+    $('raid-result-title').textContent = 'PORAŻKA';
+    $('raid-result-title').style.color = 'var(--red)';
+    $('raid-result-body').innerHTML = `Czas w ${d.name} minął.<br>Wykonano ${S.activeDung.pushups}/${d.req} pompek.<br>Brak nagrody.`;
+    $('btn-raid-close').className = 'modal-btn r';
+    $('btn-raid-close').textContent = 'ZAMKNIJ';
+  }
+  S.activeDung = null;
+  save();
+  openModal('modal-raid-result');
+  render();
+}
+
+// ════════════════════════════════════════════════
+//  RENDER
+// ════════════════════════════════════════════════
+function render() {
+  renderHeader();
+  renderStatus();
+  renderQuest();
+  renderLogs();
+  renderDungeons();
+}
+
+function renderHeader() {
+  $('hdr-name').textContent = `HUNTER: ${S.name.toUpperCase()}`;
+  $('hdr-lvl').textContent = `POZIOM ${S.level}`;
+  const rb = $('hdr-rank');
+  rb.textContent = `RANGA ${S.rank}`;
+  rb.style.color = RC[S.rank];
+  rb.style.borderColor = RC[S.rank];
+  rb.style.textShadow = `0 0 8px ${RC[S.rank]}`;
+}
+
+function renderStatus() {
+  $('s-level').textContent = S.level;
+  $('s-str').textContent = S.str;
+  $('s-gold').textContent = S.gold;
+  const req = xpReq(S.level);
+  const pct = Math.min(100, Math.floor(S.xp/req*100));
+  $('s-xp').textContent = `${S.xp}/${req}`;
+  $('xp-bar').style.width = pct+'%';
+  $('xp-label').textContent = `${S.xp} / ${req}`;
+  $('power-name').textContent = powerName(S.str);
+  $('pushup-type-name').textContent = typeName(S.str);
+  $('pushup-mult').textContent = `×${mult(S.str)} XP/pompkę`;
+  $('grind-info').textContent = `${typeName(S.str)} | ×${mult(S.str)} XP${S.debuff?' | ⚠ DEBUFF -50%':''}`;
+
+  // Grind lock
+  const lock = $('grind-lock');
+  if (S.gateActive) {
+    lock.classList.add('active');
+    $('grind-lock-reason').textContent = 'Brama Rangi — przejdź Test Awansu w zakładce QUEST';
+    $('rg-status-banner').style.display = 'block';
+  } else if (S.qActive && !S.qDone) {
+    lock.classList.add('active');
+    $('grind-lock-reason').textContent = 'Daily Quest aktywny — ukończ misję';
+    $('rg-status-banner').style.display = 'none';
+  } else {
+    lock.classList.remove('active');
+    $('rg-status-banner').style.display = 'none';
+  }
+
+  // Debuff banner
+  const db = $('debuff-banner');
+  if (S.debuff && S.debuffExp && Date.now() < S.debuffExp) {
+    db.classList.add('active');
+  } else {
+    db.classList.remove('active');
+    if (S.debuff) { S.debuff = false; S.debuffExp = null; save(); }
+  }
+}
+
+function renderQuest() {
+  const rgSec = $('rg-section');
+  const qNorm = $('quest-normal-section');
+  if (S.gateActive) {
+    rgSec.style.display = 'block';
+    qNorm.style.display = 'none';
+    $('rg-required').textContent = S.gateReq;
+    const pct = Math.min(100, Math.floor(S.gateDone/S.gateReq*100));
+    $('rg-bar').style.width = pct+'%';
+    $('rg-progress-text').textContent = `${S.gateDone} / ${S.gateReq}`;
+    return;
+  }
+  rgSec.style.display = 'none';
+  qNorm.style.display = 'block';
+
+  const req = QUEST_REQ[S.rank];
+  $('q-req-prev').textContent = req;
+  $('q-gold-preview').textContent = 50 + S.level * 5;
+  $('q-req-active').textContent = req;
+
+  ['quest-inactive','quest-active','quest-done'].forEach(id => $$(id).classList.remove('show'));
+
+  if (S.qDone) {
+    $('quest-done').classList.add('show');
+  } else if (S.qActive) {
+    $('quest-active').classList.add('show');
+    const pct = Math.min(100, Math.floor(S.qPushups/req*100));
+    $('q-pbar').style.width = pct+'%';
+    $('q-progress-text').textContent = `${S.qPushups} / ${req}`;
+  } else {
+    $('quest-inactive').classList.add('show');
+  }
+}
+
+function renderLogs() {
+  const reg = new Date(S.regDate);
+  const days = Math.floor((Date.now() - reg.getTime()) / 86400000);
+  $('l-reg').textContent = reg.toLocaleDateString('pl-PL');
+  $('l-days').textContent = days;
+  $('l-rank').textContent = S.rank;
+  $('l-rank').style.color = RC[S.rank];
+  $('l-level').textContent = S.level;
+  $('l-total').textContent = S.totalPushups;
+  $('l-streak').textContent = S.streak;
+  $('l-max-streak').textContent = S.maxStreak;
+  $('l-gold').textContent = S.gold;
+  $('l-str').textContent = S.str;
+  $('l-dungs').textContent = S.totalDungs;
+}
+
+function renderDungeons() {
+  const usedToday = S.dungDate === today();
+  $('dung-daily-info').style.display = (usedToday && !S.activeDung) ? 'block' : 'none';
+  const list = $('dung-list');
+  list.innerHTML = '';
+
+  DUNGEON_DATA.forEach(d => {
+    const locked = d.id > S.dungMax;
+    const isActive = S.activeDung && S.activeDung.id === d.id;
+    const div = document.createElement('div');
+    div.className = 'dung-card' + (locked?' locked':'') + (isActive?' raiding':(!locked?' avail':''));
+
+    let inner = `
+      <div class="dung-row">
+        <div>
+          <div style="display:flex;align-items:center;">
+            <span class="dung-id-badge">DUNGEON ${d.id}</span>
+            <span class="dung-name">${d.name}</span>
+          </div>
+          <div class="dung-req-text">${d.req} POMPEK W CIĄGU 4 GODZIN</div>
+          <div class="dung-reward-row">+${d.str} STR | +${d.xp} XP | +${d.gold} ZŁOTA</div>
+        </div>
+        <div>`;
+
+    if (locked) {
+      inner += `<span style="font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--text-dim);">🔒</span>`;
+    } else if (isActive) {
+      inner += `<span style="font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--red);">⚔️ RAJD</span>`;
+    } else {
+      const dis = (usedToday || S.gateActive) ? 'disabled' : '';
+      inner += `<button class="btn-action red" onclick="promptDung(${d.id})" ${dis}>WEJDŹ</button>`;
+    }
+
+    inner += `</div></div>`;
+
+    if (isActive) {
+      const elapsed = Date.now() - S.activeDung.startTime;
+      const remaining = Math.max(0, RAID_MS - elapsed);
+      const pct = Math.min(100, Math.floor(S.activeDung.pushups/d.req*100));
+      inner += `
+        <div class="raid-active-section">
+          <div class="raid-timer-label">// CZAS RAJDU POZOSTAŁY</div>
+          <div class="raid-timer-val" id="raid-timer">${fmtMs(remaining)}</div>
+          <div class="raid-pbar-track"><div class="raid-pbar-fill" id="raid-pbar" style="width:${pct}%"></div></div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--text-dim);display:flex;justify-content:space-between;margin-bottom:10px;">
+            <span>POMPKI RAJDU</span>
+            <span id="raid-ptext">${S.activeDung.pushups} / ${d.req}</span>
+          </div>
+          <div class="raid-input-row">
+            <input type="number" id="raid-input" min="1" max="9999" placeholder="Pompki ataku…">
+            <button class="btn-action red" onclick="submitRaid()">ATAK</button>
+          </div>
+        </div>`;
+    }
+
+    div.innerHTML = inner;
+    list.appendChild(div);
+
+    // Bind raid input Enter
+    if (isActive) {
+      const ri = document.getElementById('raid-input');
+      if (ri) ri.onkeydown = e => { if(e.key==='Enter') submitRaid(); };
+    }
+  });
+}
+
+// ════════════════════════════════════════════════
+//  MAIN LOOP
+// ════════════════════════════════════════════════
+let _lastDay = today();
+
+setInterval(() => {
+  const t = today();
+  // Day rollover
+  if (t !== _lastDay) {
+    _lastDay = t;
+    checkMissedQuest();
+    checkNewDay();
+    render();
+  }
+  // Debuff expiry
+  if (S.debuff && S.debuffExp && Date.now() >= S.debuffExp) {
+    S.debuff = false; S.debuffExp = null;
+    save(); render();
+    toast('Klątwa Leniwca wygasła!','green');
+  }
+  // Debuff countdown
+  if (S.debuff && S.debuffExp) {
+    const el = $('debuff-countdown');
+    if (el) el.textContent = fmtMs(S.debuffExp - Date.now());
+  }
+  // Quest timer
+  if (S.qActive && !S.qDone) {
+    const now = new Date();
+    const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()+1, 0,0,0);
+    const rem = midnight - now;
+    const el = $('q-timer');
+    if (el) {
+      el.textContent = fmtMs(rem);
+      el.className = rem < 30*60*1000 ? 'quest-timer warn' : 'quest-timer';
+    }
+  }
+  // Raid timer
+  if (S.activeDung) {
+    const rem = Math.max(0, RAID_MS - (Date.now() - S.activeDung.startTime));
+    const el = $('raid-timer');
+    if (el) el.textContent = fmtMs(rem);
+    if (rem === 0) { endRaid(false); return; }
+  }
+}, 1000);
+
+// ════════════════════════════════════════════════
+//  OVERLAYS / MODALS / TOASTS
+// ════════════════════════════════════════════════
+function openModal(id)  { $(id).classList.add('show'); }
+function closeModal(id) { $(id).classList.remove('show'); }
+
+function showLevelUp(lv) {
+  $('levelup-num').textContent = lv;
+  const el = $('levelup-overlay');
+  el.classList.add('show');
+  el.onclick = () => el.classList.remove('show');
+}
+
+function showRankUp(rank) {
+  const el = $('rankup-overlay');
+  const rk = $('rankup-rank');
+  rk.textContent = rank;
+  rk.style.color = RC[rank];
+  rk.style.textShadow = `0 0 20px ${RC[rank]}, 0 0 50px ${RC[rank]}`;
+  el.classList.add('show');
+  el.onclick = () => el.classList.remove('show');
+}
+
+function toast(msg, type='blue') {
+  const c = $('toast-container');
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 3800);
+}
+
+function xpFloat(text) {
+  const el = document.createElement('div');
+  el.className = 'xp-float';
+  el.textContent = text;
+  el.style.left = (20 + Math.random()*60)+'vw';
+  el.style.top = '65vh';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1600);
+}
+
+// ════════════════════════════════════════════════
+//  TABS
+// ════════════════════════════════════════════════
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    $('tab-'+btn.dataset.tab).classList.add('active');
+    render();
+  });
+});
+
+// ════════════════════════════════════════════════
+//  START SCREEN
+// ════════════════════════════════════════════════
+let chosenRank = 'E';
+
+document.querySelectorAll('.rank-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.rank-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    chosenRank = btn.dataset.rank;
+  });
+});
+
+$('btn-start').addEventListener('click', () => {
+  if (load()) {
+    startApp();
+    toast(`Witaj z powrotem, ${S.name}!`, 'blue');
+  } else {
+    const name = $('start-name').value.trim();
+    if (!name) { toast('Wprowadź imię łowcy!','red'); return; }
+    S = mkState(name, chosenRank);
+    save();
+    startApp();
+    toast(`System aktywowany. Witaj, ${name}!`,'blue');
+  }
+});
+
+function startApp() {
+  $('start-screen').style.display = 'none';
+  $('app').style.display = 'block';
+  checkMissedQuest();
+  checkNewDay();
+  render();
+}
+
+window.addEventListener('load', () => {
+  if (load()) {
+    startApp();
+  }
+});
+
+// ════════════════════════════════════════════════
+//  HELPERS
+// ════════════════════════════════════════════════
+function $(id) { return document.getElementById(id); }
+function $$(id){ return document.getElementById(id); }
+
+// ════════════════════════════════════════════════
+//  BACKGROUND CANVAS
+// ════════════════════════════════════════════════
+(function() {
+  const cv = document.getElementById('bg-canvas');
+  const cx = cv.getContext('2d');
+  let W, H;
+  const pts = [];
+
+  function resize() {
+    W = cv.width = window.innerWidth;
+    H = cv.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  for (let i = 0; i < 60; i++) pts.push({
+    x: Math.random()*1600, y: Math.random()*1000,
+    vx: (Math.random()-.5)*.12,
+    vy: (Math.random()-.5)*.12,
+    r: Math.random()*1.2+.2,
+    a: Math.random()*.35+.08,
+    c: Math.random()<.7 ? '0,212,255' : '255,26,68'
+  });
+
+  function draw() {
+    cx.clearRect(0,0,W,H);
+    // subtle grid
+    cx.strokeStyle = 'rgba(0,212,255,0.022)';
+    cx.lineWidth = 1;
+    for (let x=0;x<W;x+=80){cx.beginPath();cx.moveTo(x,0);cx.lineTo(x,H);cx.stroke();}
+    for (let y=0;y<H;y+=80){cx.beginPath();cx.moveTo(0,y);cx.lineTo(W,y);cx.stroke();}
+    pts.forEach(p => {
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x<0)p.x=W; if(p.x>W)p.x=0;
+      if(p.y<0)p.y=H; if(p.y>H)p.y=0;
+      cx.beginPath();
+      cx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      cx.fillStyle=`rgba(${p.c},${p.a})`;
+      cx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+</script>
+</body>
+</html>
